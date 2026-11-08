@@ -22,6 +22,11 @@ public class ConsultarMenusUseCase {
         return repo.findBySemana(desde, turno).stream().map(MenuDto::from).toList();
     }
 
+    /** Historial de menús (todos los turnos) entre dos fechas, ambas inclusive. */
+    public List<MenuDto> historial(LocalDate desde, LocalDate hasta) {
+        return repo.findByRango(desde, hasta).stream().map(MenuDto::from).toList();
+    }
+
     public Optional<MenuDto> porId(String id) {
         return repo.findById(id).map(MenuDto::from);
     }

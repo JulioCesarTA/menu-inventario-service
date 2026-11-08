@@ -13,6 +13,7 @@ import java.util.Optional;
 interface SpringMenuRepo extends MongoRepository<MenuDocument, String> {
     List<MenuDocument> findByFechaBetweenAndTurno(LocalDate from, LocalDate to, Turno turno);
     Optional<MenuDocument> findByFechaAndTurno(LocalDate fecha, Turno turno);
+    List<MenuDocument> findByFechaBetween(LocalDate from, LocalDate to);
 }
 
 /** Adaptador de salida: implementa el puerto MenuRepository del dominio sobre Mongo. */
@@ -25,6 +26,9 @@ public class MongoMenuRepository implements MenuRepository {
     @Override public Optional<Menu> findById(String id) { return repo.findById(id).map(MenuDocument::aDominio); }
     @Override public List<Menu> findBySemana(LocalDate inicio, Turno turno) {
         return repo.findByFechaBetweenAndTurno(inicio, inicio.plusDays(6), turno).stream().map(MenuDocument::aDominio).toList();
+    }
+    @Override public List<Menu> findByRango(LocalDate desde, LocalDate hasta) {
+        return repo.findByFechaBetween(desde, hasta).stream().map(MenuDocument::aDominio).toList();
     }
     @Override public Optional<Menu> findByFechaYTurno(LocalDate f, Turno t) {
         return repo.findByFechaAndTurno(f, t).map(MenuDocument::aDominio);

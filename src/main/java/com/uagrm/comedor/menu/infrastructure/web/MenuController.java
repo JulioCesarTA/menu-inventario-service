@@ -34,6 +34,11 @@ public class MenuController {
         return consultar.semana(turno, inicio != null ? LocalDate.parse(inicio) : null);
     }
 
+    @GetMapping("/historial")
+    public List<MenuDto> historial(@RequestParam String desde, @RequestParam String hasta) {
+        return consultar.historial(LocalDate.parse(desde), LocalDate.parse(hasta));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MenuDto> uno(@PathVariable String id) {
         return consultar.porId(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

@@ -11,5 +11,7 @@ public interface MenuRepository {
     Menu save(Menu menu);
     Optional<Menu> findById(String id);
     List<Menu> findBySemana(LocalDate inicioSemana, Turno turno);
+    /** Menús de todos los turnos entre dos fechas (inclusive): historial para analítica. */
+    List<Menu> findByRango(LocalDate desde, LocalDate hasta);
     Optional<Menu> findByFechaYTurno(LocalDate fecha, Turno turno);
 }
