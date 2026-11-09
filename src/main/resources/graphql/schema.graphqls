@@ -1,0 +1,55 @@
+# Subgrafo de Apollo Federation de menú e inventario (SPEC §4).
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@key"])
+
+type Porcion {
+  platoId: String!
+  cupo: Int!
+  apartadas: Int!
+  disponibles: Int!
+}
+
+type Menu @key(fields: "id") {
+  id: ID!
+  fecha: String!
+  turno: String!
+  publicado: Boolean!
+  porciones: [Porcion!]!
+}
+
+type Lote {
+  loteId: String!
+  cantidad: Float!
+  unidad: String
+  vence: String
+}
+
+type Insumo @key(fields: "id") {
+  id: ID!
+  nombre: String!
+  unidad: String!
+  stockMinimo: Float!
+  stockTotal: Float!
+  lotes: [Lote!]!
+}
+
+type RecepcionLote {
+  ok: Boolean!
+  insumoId: ID!
+  loteId: String!
+}
+
+input PlatoIn {
+  platoId: String!
+  cupo: Int!
+}
+
+type Query {
+  menusSemana(turno: String!): [Menu!]!
+  insumos: [Insumo!]!
+}
+
+type Mutation {
+  publicarMenu(fecha: String!, turno: String!, platos: [PlatoIn!]!): Menu!
+  crearInsumo(id: ID!, nombre: String!, unidad: String!, stockMinimo: Float!): Insumo!
+  registrarLote(insumoId: ID!, loteId: String!, cantidad: Float!, unidad: String!, vence: String!): RecepcionLote!
+}
