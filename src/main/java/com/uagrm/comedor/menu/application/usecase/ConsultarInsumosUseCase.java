@@ -1,6 +1,7 @@
 package com.uagrm.comedor.menu.application.usecase;
 
 import com.uagrm.comedor.menu.application.dto.InsumoDto;
+import com.uagrm.comedor.menu.application.dto.LineaOrdenCompraDto;
 import com.uagrm.comedor.menu.application.dto.LotePorVencerDto;
 import com.uagrm.comedor.menu.domain.model.Insumo;
 import com.uagrm.comedor.menu.domain.repository.InsumoRepository;
@@ -24,6 +25,11 @@ public class ConsultarInsumosUseCase {
     /** Insumos cuyo stock total llegó al mínimo o quedó por debajo. */
     public List<InsumoDto> stockBajo() {
         return repo.findAll().stream().filter(Insumo::tieneStockBajo).map(InsumoDto::from).toList();
+    }
+
+    /** Borrador de orden de compra con los insumos de stock bajo. No compra ni guarda nada: lo decide el administrador. */
+    public List<LineaOrdenCompraDto> ordenCompraBorrador() {
+        return repo.findAll().stream().filter(Insumo::tieneStockBajo).map(LineaOrdenCompraDto::from).toList();
     }
 
     /** Lotes que vencen dentro de `dias` días (o ya vencidos), del más urgente al menos urgente. */

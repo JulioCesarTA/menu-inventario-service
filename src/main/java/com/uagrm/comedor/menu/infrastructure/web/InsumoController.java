@@ -1,6 +1,7 @@
 package com.uagrm.comedor.menu.infrastructure.web;
 
 import com.uagrm.comedor.menu.application.dto.InsumoDto;
+import com.uagrm.comedor.menu.application.dto.LineaOrdenCompraDto;
 import com.uagrm.comedor.menu.application.usecase.ConsultarInsumosUseCase;
 import com.uagrm.comedor.menu.application.usecase.CrearInsumoUseCase;
 import com.uagrm.comedor.menu.application.usecase.RegistrarLoteUseCase;
@@ -29,6 +30,10 @@ public class InsumoController {
 
     @GetMapping("/stock-bajo")
     public List<InsumoDto> stockBajo() { return consultarInsumos.stockBajo(); }
+
+    /** Lo usa el flujo nocturno de reposición de n8n. */
+    @GetMapping("/orden-compra-borrador")
+    public List<LineaOrdenCompraDto> ordenCompraBorrador() { return consultarInsumos.ordenCompraBorrador(); }
 
     @PostMapping("/lotes")
     public Map<String, Object> registrarLote(@RequestBody RegistrarLoteUseCase.Entrada e) {

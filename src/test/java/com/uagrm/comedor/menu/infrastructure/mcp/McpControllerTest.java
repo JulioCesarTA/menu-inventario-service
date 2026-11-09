@@ -2,11 +2,13 @@ package com.uagrm.comedor.menu.infrastructure.mcp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.uagrm.comedor.menu.application.usecase.ArmarMenuSemanalUseCase;
 import com.uagrm.comedor.menu.application.usecase.ConsultarInsumosUseCase;
 import com.uagrm.comedor.menu.application.usecase.ConsultarMenusUseCase;
 import com.uagrm.comedor.menu.domain.model.*;
 import com.uagrm.comedor.menu.domain.repository.InsumoRepository;
 import com.uagrm.comedor.menu.domain.repository.MenuRepository;
+import com.uagrm.comedor.menu.domain.service.EventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,11 +39,18 @@ class McpControllerTest {
                 m.agregarPlato("plato-pollo", 100);
                 return List.of(m);
             }
-            public List<Menu> findByRango(LocalDate d, LocalDate h) { return List.of(); }
+            public List<Menu> findByRango(LocalDate d, LocalDate h) {
+                Menu m = new Menu("m2", d, Turno.ALMUERZO);
+                m.agregarPlato("plato-pollo", 20);
+                for (int i = 0; i < 11; i++) m.apartarPorcion("plato-pollo");
+                return List.of(m);
+            }
             public Optional<Menu> findByFechaYTurno(LocalDate f, Turno t) { return Optional.empty(); }
         };
         ObjectMapper json = new ObjectMapper().registerModule(new JavaTimeModule());
-        mcp = new McpController(new HerramientasMenu(new ConsultarMenusUseCase(menus), new ConsultarInsumosUseCase(insumos)), json);
+        EventPublisher eventos = lista -> { };
+        mcp = new McpController(new HerramientasMenu(new ConsultarMenusUseCase(menus), new ConsultarInsumosUseCase(insumos),
+            new ArmarMenuSemanalUseCase(menus, eventos)), json);
     }
 
     private Map<String, Object> pedir(String metodo, Map<String, Object> params) {
@@ -72,7 +81,8 @@ class McpControllerTest {
     void tools_list_trae_las_herramientas_con_su_esquema() {
         var tools = (List<Map<String, Object>>) resultado(pedir("tools/list", null)).get("tools");
         var nombres = tools.stream().map(t -> t.get("name")).toList();
-        assertEquals(List.of("consultar_menu", "ver_stock_insumo", "ver_stock_bajo", "lotes_por_vencer"), nombres);
+        assertEquals(List.of("consultar_menu", "ver_stock_insumo", "ver_stock_bajo", "lotes_por_vencer",
+            "sugerir_cantidad_cocinar", "crear_orden_compra_borrador", "publicar_menu"), nombres);
         assertEquals("object", ((Map<?, ?>) tools.get(0).get("inputSchema")).get("type"));
     }
 
@@ -85,6 +95,42 @@ class McpControllerTest {
         assertEquals(1, lotes.size());
         var bajo = resultado(pedir("tools/call", Map.of("name", "ver_stock_bajo", "arguments", Map.of())));
         assertEquals(1, ((List<?>) ((Map<String, Object>) bajo.get("structuredContent")).get("resultado")).size());
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> filas(String herramienta, Map<String, Object> args) throws Exception {
+        var r = resultado(pedir("tools/call", Map.of("name", herramienta, "arguments", args)));
+        assertEquals(false, r.get("isError"));
+        var texto = (String) ((List<Map<String, Object>>) r.get("content")).get(0).get("text");
+        return new ObjectMapper().readValue(texto, List.class);
+    }
+
+    @Test
+    void sugiere_lo_reservado_mas_diez_por_ciento_sin_pasar_del_cupo() throws Exception {
+        var f = filas("sugerir_cantidad_cocinar", Map.of("turno", "ALMUERZO", "fecha", "2026-11-09"));
+        assertEquals(1, f.size());
+        assertEquals("plato-pollo", f.get(0).get("platoId"));
+        assertEquals(11, f.get(0).get("reservadas"));
+        assertEquals(13, f.get(0).get("sugerida"));       // 11 + 10 % redondeado hacia arriba
+    }
+
+    @Test
+    void el_borrador_repone_hasta_el_doble_del_minimo() throws Exception {
+        var f = filas("crear_orden_compra_borrador", Map.of());
+        assertEquals(1, f.size());
+        assertEquals("sal", f.get(0).get("insumoId"));
+        assertEquals(2, f.get(0).get("cantidadSugerida"));
+        assertEquals("BORRADOR", f.get(0).get("estado"));
+    }
+
+    @Test
+    void publica_el_menu_y_rechaza_uno_sin_platos() {
+        var ok = resultado(pedir("tools/call", Map.of("name", "publicar_menu", "arguments", Map.of(
+            "fecha", "2026-11-09", "turno", "CENA", "platos", List.of(Map.of("platoId", "sopa", "cupo", 30))))));
+        assertEquals(false, ok.get("isError"));
+        var mal = resultado(pedir("tools/call", Map.of("name", "publicar_menu", "arguments", Map.of(
+            "fecha", "2026-11-09", "turno", "CENA", "platos", List.of()))));
+        assertEquals(true, mal.get("isError"));
     }
 
     @Test
