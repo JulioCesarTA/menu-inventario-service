@@ -4,6 +4,7 @@ import com.uagrm.comedor.menu.domain.event.DomainEvent;
 import com.uagrm.comedor.menu.domain.event.PorcionApartadaEvent;
 import com.uagrm.comedor.menu.domain.event.PorcionLiberadaEvent;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +44,11 @@ public class Menu {
     /** Reconstruye un menú ya guardado (sin emitir eventos ni revalidar). Lo usa el repositorio. */
     public static Menu reconstituir(String id, LocalDate fecha, Turno turno, boolean publicado, Map<String, Porcion> porciones) {
         return new Menu(id, fecha, turno, publicado, new HashMap<>(porciones));
+    }
+
+    /** Las semanas del comedor empiezan el lunes: lunes de la semana a la que pertenece `dia`. */
+    public static LocalDate inicioDeSemana(LocalDate dia) {
+        return dia.with(DayOfWeek.MONDAY);
     }
 
     public void agregarPlato(String platoId, int cupo) {

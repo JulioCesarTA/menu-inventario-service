@@ -50,6 +50,14 @@ class MenuTest {
     }
 
     @Test
+    void la_semana_empieza_el_lunes() {
+        LocalDate lunes = LocalDate.of(2026, 11, 9);
+        assertEquals(lunes, Menu.inicioDeSemana(lunes));
+        assertEquals(lunes, Menu.inicioDeSemana(LocalDate.of(2026, 11, 12)));
+        assertEquals(lunes, Menu.inicioDeSemana(LocalDate.of(2026, 11, 15)));   // domingo
+    }
+
+    @Test
     void apartar_emite_evento_de_dominio() {
         Menu m = new Menu("m1", LocalDate.now(), Turno.ALMUERZO);
         m.agregarPlato("plato-A", 2);

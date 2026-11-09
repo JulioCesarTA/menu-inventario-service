@@ -16,4 +16,10 @@ public record Porcion(String platoId, int cupoTotal, int apartadas) {
         if (apartadas == 0) throw new IllegalStateException("Nada que liberar");
         return new Porcion(platoId, cupoTotal, apartadas - 1);
     }
+
+    /** Raciones a preparar: lo apartado más un 10 % de margen (redondeado hacia arriba), sin pasar del cupo. */
+    public int racionesACocinar() {
+        int margen = (apartadas + 9) / 10;      // 10 % redondeado hacia arriba
+        return Math.min(cupoTotal, apartadas + margen);
+    }
 }

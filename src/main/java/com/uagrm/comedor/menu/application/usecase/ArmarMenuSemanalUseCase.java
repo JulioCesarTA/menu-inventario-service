@@ -5,13 +5,11 @@ import com.uagrm.comedor.menu.domain.model.Menu;
 import com.uagrm.comedor.menu.domain.model.Turno;
 import com.uagrm.comedor.menu.domain.repository.MenuRepository;
 import com.uagrm.comedor.menu.domain.service.EventPublisher;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@Service
 public class ArmarMenuSemanalUseCase {
     private final MenuRepository menuRepo;
     private final EventPublisher publisher;

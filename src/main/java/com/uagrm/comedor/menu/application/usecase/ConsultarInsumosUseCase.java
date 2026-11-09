@@ -5,14 +5,11 @@ import com.uagrm.comedor.menu.application.dto.LineaOrdenCompraDto;
 import com.uagrm.comedor.menu.application.dto.LotePorVencerDto;
 import com.uagrm.comedor.menu.domain.model.Insumo;
 import com.uagrm.comedor.menu.domain.repository.InsumoRepository;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 
-@Service
 public class ConsultarInsumosUseCase {
     private final InsumoRepository repo;
 
@@ -36,10 +33,9 @@ public class ConsultarInsumosUseCase {
     public List<LotePorVencerDto> porVencer(int dias, LocalDate hoy) {
         LocalDate limite = hoy.plusDays(dias);
         return repo.findAll().stream()
-            .flatMap(i -> i.getLotes().stream()
-                .filter(l -> !l.vencimiento().fecha().isAfter(limite))
+            .flatMap(i -> i.lotesQueVencenHasta(limite).stream()
                 .map(l -> new LotePorVencerDto(i.getId(), i.getNombre(), l.cantidad().valor(), i.getUnidad(),
-                    l.vencimiento().fecha(), ChronoUnit.DAYS.between(hoy, l.vencimiento().fecha()))))
+                    l.vencimiento().fecha(), l.vencimiento().diasRestantes(hoy))))
             .sorted(Comparator.comparingLong(LotePorVencerDto::diasRestantes))
             .toList();
     }

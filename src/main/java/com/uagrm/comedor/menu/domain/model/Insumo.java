@@ -50,6 +50,16 @@ public class Insumo {
         return stockTotal() <= stockMinimo;
     }
 
+    /** Cuánto comprar para reponer hasta el doble del stock mínimo (redondeado hacia arriba, al menos 1). */
+    public int cantidadSugeridaDeCompra() {
+        return (int) Math.max(1, Math.ceil(2 * stockMinimo - stockTotal()));
+    }
+
+    /** Lotes que vencen en la fecha límite o antes (incluye los ya vencidos), en el orden en que se registraron. */
+    public List<Lote> lotesQueVencenHasta(LocalDate limite) {
+        return lotes.stream().filter(l -> l.vencimiento().venceHasta(limite)).toList();
+    }
+
     public void revisarAlertas(LocalDate hoy) {
         if (tieneStockBajo()) {
             eventos.add(new StockBajoEvent(id, nombre, stockTotal(), stockMinimo));

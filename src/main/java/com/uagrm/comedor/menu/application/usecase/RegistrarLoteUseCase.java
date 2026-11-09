@@ -3,11 +3,9 @@ package com.uagrm.comedor.menu.application.usecase;
 import com.uagrm.comedor.menu.domain.model.*;
 import com.uagrm.comedor.menu.domain.repository.InsumoRepository;
 import com.uagrm.comedor.menu.domain.service.EventPublisher;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 
-@Service
 public class RegistrarLoteUseCase {
     private final InsumoRepository repo;
     private final EventPublisher publisher;
